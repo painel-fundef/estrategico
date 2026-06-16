@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Estratégico — Monteiro e Monteiro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f4f1;--surface:#fff;--surface2:#f0efe9;--border:rgba(0,0,0,.10);--border2:rgba(0,0,0,.18);
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#9a9990;
+  --blue:#185FA5;--blue-l:#E6F1FB;--blue-t:#0C447C;
+  --green:#0F6E56;--green-l:#E1F5EE;--green-t:#085041;
+  --amber:#BA7517;--amber-l:#FAEEDA;--amber-t:#633806;
+  --red:#A32D2D;--red-l:#FCEBEB;--red-t:#501313;
+  --purple:#534AB7;--purple-l:#EEEDFE;--purple-t:#3C3489;
+  --lime:#3B6D11;--lime-l:#EAF3DE;--lime-t:#27500A;
+  --radius:10px;--radius-sm:6px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1c1c1a;--surface:#252523;--surface2:#2e2e2b;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
+  --text:#e8e7e2;--text2:#a8a79f;--text3:#686760;
+  --blue:#85B7EB;--blue-l:#0C2A4A;--blue-t:#B5D4F4;
+  --green:#5DCAA5;--green-l:#04201A;--green-t:#9FE1CB;
+  --amber:#EF9F27;--amber-l:#2A1A00;--amber-t:#FAC775;
+  --red:#F09595;--red-l:#2A0808;--red-t:#F7C1C1;
+  --purple:#AFA9EC;--purple-l:#1A1840;--purple-t:#CECBF6;
+  --lime:#97C459;--lime-l:#0A1A02;--lime-t:#C0DD97;
+}}
+html{font-size:15px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh}
+.app{max-width:1340px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+.header{margin-bottom:1.25rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.header h1{font-size:1.2rem;font-weight:600;letter-spacing:-.01em}
+.header p{font-size:.82rem;color:var(--text2);margin-top:3px}
+.sync-area{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.sync-btn{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 12px;font-size:.78rem;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;white-space:nowrap}
+.sync-btn:hover{background:var(--surface2);color:var(--text)}
+.sync-btn svg{width:13px;height:13px;flex-shrink:0}
+.sync-status{font-size:.72rem;color:var(--text3);text-align:right}.sync-status.ok{color:var(--green)}.sync-status.err{color:var(--red)}
+.config-panel{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.25rem}
+.config-panel h2{font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.config-grid label{font-size:.76rem;color:var(--text2);display:block;margin-bottom:3px}
+.config-grid input,.config-grid select{width:100%;padding:6px 9px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-size:.78rem;font-family:inherit}
+.config-help{font-size:.72rem;color:var(--text3);margin-top:8px;line-height:1.6}
+.config-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{padding:6px 12px;border-radius:var(--radius-sm);font-size:.78rem;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--text);transition:background .15s;font-family:inherit}
+.btn:hover{background:var(--surface2)}.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}.btn-primary:hover{opacity:.88}
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:1rem}
+@media(max-width:800px){.kpis{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:500px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem}
+.kpi-label{font-size:.68rem;color:var(--text2);font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.kpi-value{font-size:1.75rem;font-weight:600;color:var(--text);line-height:1}
+.kpi-sub{font-size:.67rem;color:var(--text3);margin-top:4px}
+/* Tabela pautados */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}
+.section-title{font-size:.78rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+.cnt{font-size:.72rem;color:var(--text3)}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:1.25rem;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.78rem}
+thead th{background:var(--surface2);color:var(--text2);font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border2);white-space:nowrap}
+tbody td{padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2)}
+/* Gráficos */
+.charts-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.25rem}
+.charts-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+.charts-grid-wide{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:1.25rem}
+@media(max-width:900px){.charts-grid{grid-template-columns:1fr 1fr}.charts-grid-wide{grid-template-columns:1fr}}
+@media(max-width:600px){.charts-grid,.charts-grid-2{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1.1rem}
+.card-title{font-size:.7rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem}
+.chart-container{position:relative;overflow:hidden}
+/* Filtro */
+.filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.7rem 1rem;margin-bottom:.75rem;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filter-bar select,.filter-bar input{padding:5px 8px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-size:.76rem;font-family:inherit;flex:1;min-width:110px}
+/* Badges */
+.badge{display:inline-block;font-size:.66rem;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:.02em;white-space:nowrap}
+.b-blue{background:var(--blue-l);color:var(--blue-t)}
+.b-green{background:var(--green-l);color:var(--green-t)}
+.b-amber{background:var(--amber-l);color:var(--amber-t)}
+.b-purple{background:var(--purple-l);color:var(--purple-t)}
+.b-lime{background:var(--lime-l);color:var(--lime-t)}
+.b-gray{background:var(--surface2);color:var(--text2)}
+.legend-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:.69rem;color:var(--text2)}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.mono{font-family:monospace;font-size:.72rem}
+.empty-state{text-align:center;padding:2rem;color:var(--text3);font-size:.82rem}
+.spinner{width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+#last-update{font-size:.68rem;color:var(--text3)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <div>
+    <h1>Painel Estratégico — Monteiro e Monteiro</h1>
+    <p id="subtitle">Carregando dados…</p>
+  </div>
+  <div class="sync-area">
+    <button class="sync-btn" id="syncBtn" onclick="syncSheets()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Sincronizar Google Sheets
+    </button>
+    <span class="sync-status" id="syncStatus">Dados do script de sincronização</span>
+    <span id="last-update"></span>
+    <button class="btn" onclick="toggleConfig()" style="font-size:.7rem;margin-top:2px">⚙ Configurar sincronização ao vivo</button>
+  </div>
+</div>
+
+<div class="config-panel" id="configPanel" style="display:none">
+  <h2>Configuração — Sincronização ao vivo via Google Sheets API</h2>
+  <div class="config-grid">
+    <div><label>ID da planilha</label><input id="sheetId" value="1o3hYd5euWdgNHms-qL6ejlA3gdiLJ2K0UHefvcaVgrE"></div>
+    <div><label>Nome da aba</label><input id="sheetName" value="Informações Institucionais"></div>
+    <div><label>Chave de API do Google (Sheets API v4)</label><input id="apiKey" placeholder="AIza…"></div>
+    <div><label>Atualização automática</label>
+      <select id="autoRefresh">
+        <option value="0">Desligado</option>
+        <option value="60000">A cada 1 minuto</option>
+        <option value="300000" selected>A cada 5 minutos</option>
+        <option value="900000">A cada 15 minutos</option>
+        <option value="3600000">A cada 1 hora</option>
+      </select>
+    </div>
+  </div>
+  <div class="config-help">Requer planilha pública + chave da Sheets API v4. Alternativa: rode <code>sincronizar_estrategicos.py</code> para gerar HTML com dados embutidos.</div>
+  <div class="config-actions">
+    <button class="btn btn-primary" onclick="saveConfigAndSync()">Salvar e Sincronizar</button>
+    <button class="btn" onclick="toggleConfig()">Fechar</button>
+    <button class="btn" onclick="exportCSV()">Exportar CSV</button>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="kpis">
+  <div class="kpi"><div class="kpi-label">Total de processos</div><div class="kpi-value" style="color:var(--blue)" id="k-total">—</div><div class="kpi-sub">na carteira estratégica</div></div>
+  <div class="kpi"><div class="kpi-label">Pautados</div><div class="kpi-value" style="color:var(--green)" id="k-pautados">—</div><div class="kpi-sub">com sessão agendada</div></div>
+  <div class="kpi"><div class="kpi-label">Próxima sessão</div><div class="kpi-value" style="font-size:1.05rem;padding-top:5px;color:var(--amber)" id="k-prox">—</div><div class="kpi-sub" id="k-prox-sub"></div></div>
+  <div class="kpi"><div class="kpi-label">Valores envolvidos</div><div class="kpi-value" style="font-size:1.1rem;padding-top:5px;color:var(--lime)" id="k-valor">—</div><div class="kpi-sub">processos com valor informado</div></div>
+  <div class="kpi"><div class="kpi-label">Tribunais distintos</div><div class="kpi-value" id="k-tribs">—</div><div class="kpi-sub" id="k-tipos-sub"></div></div>
+</div>
+
+<!-- TABELA PAUTADOS (logo abaixo dos KPIs) -->
+<div class="section-header">
+  <span class="section-title">📅 Processos pautados</span>
+  <span class="cnt" id="cnt-p">—</span>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead><tr>
+      <th>Partes</th><th>Tribunal</th><th>Localização</th>
+      <th>Vara de origem</th><th>Magistrado de piso</th><th>Magistrado responsável</th>
+      <th>Turma</th><th>Tipo de sessão</th><th>Data</th>
+    </tr></thead>
+    <tbody id="tb-p"></tbody>
+  </table>
+</div>
+
+<!-- GRÁFICOS: linha 1 — tribunal (wide) + instância -->
+<div class="charts-grid-wide">
+  <div class="card">
+    <div class="card-title">Processos por tribunal</div>
+    <div class="chart-container"><canvas id="cTrib" style="max-height:300px"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Por instância</div>
+    <canvas id="cGrau" style="max-height:160px"></canvas>
+    <div class="legend-row" id="lgGrau"></div>
+  </div>
+</div>
+
+<!-- GRÁFICOS: linha 2 — tipo de ação + setor + filial -->
+<div class="charts-grid">
+  <div class="card">
+    <div class="card-title">Tipo de ação</div>
+    <canvas id="cAcao" style="max-height:200px"></canvas>
+    <div class="legend-row" id="lgAcao"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Setor responsável</div>
+    <canvas id="cSetor" style="max-height:200px"></canvas>
+    <div class="legend-row" id="lgSetor"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Filial responsável</div>
+    <canvas id="cFilial" style="max-height:200px"></canvas>
+    <div class="legend-row" id="lgFilial"></div>
+  </div>
+</div>
+
+<!-- GRÁFICOS: linha 3 — magistrados + turma + vara -->
+<div class="charts-grid">
+  <div class="card">
+    <div class="card-title">Por magistrado de piso (top 10)</div>
+    <div class="chart-container"><canvas id="cMagPiso" style="max-height:260px"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Por magistrado responsável (top 10)</div>
+    <div class="chart-container"><canvas id="cMagResp" style="max-height:260px"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Por turma (top 10)</div>
+    <div class="chart-container"><canvas id="cTurma" style="max-height:260px"></canvas></div>
+  </div>
+</div>
+
+<!-- GRÁFICO: vara de origem (full width) -->
+<div class="card" style="margin-bottom:1.25rem">
+  <div class="card-title">Por vara de origem (top 15)</div>
+  <div class="chart-container"><canvas id="cVara" style="max-height:340px"></canvas></div>
+</div>
+
+<!-- FILTROS + TABELA COMPLETA -->
+<div class="filter-bar">
+  <select id="fT" onchange="renderAll()"><option value="">Todos os tribunais</option></select>
+  <select id="fG" onchange="renderAll()">
+    <option value="">Todas as instâncias</option>
+    <option value="1º Grau">1º Grau</option>
+    <option value="2º Grau">2º Grau</option>
+    <option value="Superior">Superior</option>
+  </select>
+  <select id="fS" onchange="renderAll()"><option value="">Todos os setores</option></select>
+  <select id="fF" onchange="renderAll()"><option value="">Todas as filiais</option></select>
+  <select id="fP" onchange="renderAll()">
+    <option value="">Pautado: todos</option>
+    <option value="Sim">Somente pautados</option>
+    <option value="Não">Somente não pautados</option>
+  </select>
+  <input id="srch" placeholder="Buscar partes, processo, magistrado, matéria…" oninput="renderAll()">
+</div>
+
+<div class="section-header">
+  <span class="section-title">Todos os processos</span>
+  <span class="cnt" id="cnt-all">—</span>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead><tr>
+      <th>Processo</th><th>Partes</th><th>Tribunal</th><th>Instância</th>
+      <th>Vara de origem</th><th>Magistrado de piso</th><th>Magistrado responsável</th><th>Turma</th>
+      <th>Tipo de ação</th><th>Matéria</th><th>Setor</th><th>Filial</th><th>Valor</th><th>Pautado</th>
+    </tr></thead>
+    <tbody id="tb-all"></tbody>
+  </table>
+</div>
+
+</div><!-- .app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ── helpers ──────────────────────────────────────────────────
+function norm(s){return(s||'').toString().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();}
+function classTrib(s){
+  if(!s||s==='-')return 'N/D';
+  const up=s.toUpperCase();
+  for(const t of ['STJ','STF','TRF1','TRF5','TRF3','TRF2','TJPE','TJCE','TJAL','TJMA','TJBA','TJPI','TJSP','TJPB','TJRJ','TJRS'])
+    if(up.includes(t))return t;
+  return s.split(' ')[0];
+}
+function classGrau(loc,trib){
+  const l=(loc||'').toUpperCase(),t=(trib||'').toUpperCase();
+  if(/1[°o]\s*GRAU|1\u00baGRAU|JFDF|JFCE|JFPE|JFSP/.test(l))return '1\u00ba Grau';
+  if(/2[°o]\s*GRAU|2\u00baGRAU|TRF/.test(l))return '2\u00ba Grau';
+  if(/SUPERIOR|TRIBUNAIS SUPERIORES/.test(l)||/STJ|STF/.test(t))return 'Superior';
+  if(/TRF/.test(t))return '2\u00ba Grau';
+  return 'N/D';
+}
+function parseBRL(s){if(!s)return 0;const n=parseFloat(s.replace(/[R$\s.]/g,'').replace(',','.'));return isNaN(n)?0:n;}
+function fmtBRL(n){if(!n)return'—';if(n>=1e9)return'R$ '+(n/1e9).toFixed(2).replace('.',',')+' B';if(n>=1e6)return'R$ '+(n/1e6).toFixed(1).replace('.',',')+' M';return'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:0});}
+function setStatus(msg,cls){const el=document.getElementById('syncStatus');el.textContent=msg;el.className='sync-status '+(cls||'');}
+function toggleConfig(){const p=document.getElementById('configPanel');p.style.display=p.style.display==='none'?'':'none';}
+
+const TC={STJ:'#185FA5',STF:'#A32D2D',TRF1:'#1D9E75',TRF5:'#0F6E56',TRF3:'#5DCAA5',TRF2:'#9FE1CB',TJPE:'#534AB7',TJCE:'#7F77DD',TJAL:'#AFA9EC',TJMA:'#BA7517',TJBA:'#EF9F27',TJPI:'#D85A30',TJSP:'#993C1D',TJPB:'#F5C4B3',TJRJ:'#3C3489',TJRS:'#888780'};
+const PAL=['#185FA5','#1D9E75','#D85A30','#BA7517','#534AB7','#A32D2D','#639922','#888780','#0F6E56','#3C3489','#EF9F27','#5DCAA5','#F5C4B3','#9FE1CB','#AFA9EC'];
+
+// ── DATA ────────────────────────────────────────────────────
+const EMBEDDED_DATA = [];
+let DATA=[], autoRefreshTimer=null;
+let chTrib,chGrau,chAcao,chSetor,chFilial,chMagPiso,chMagResp,chTurma,chVara;
+
+function processRows(raw){
+  return raw.map(d=>{
+    const trib=classTrib(d.trib_raw||d.trib||'');
+    const grau=classGrau(d.loc_raw||d.loc||'',d.trib_raw||d.trib||'');
+    let loc=d.loc_raw||d.loc||'';
+    if(!loc||loc==='Tribunais Superiores')loc=trib;
+    else if(/1[°o]\s*GRAU|1\u00baGRAU/.test(loc))loc=trib+' 1\u00ba Grau';
+    else if(/2[°o]\s*GRAU|2\u00baGRAU/.test(loc))loc=trib+' 2\u00ba Grau';
+    return{...d,trib,grau,loc};
+  }).filter(d=>d.proc||d.partes);
+}
+
+// ── render principal ────────────────────────────────────────
+function render(){
+  const V=DATA.filter(d=>d.partes||d.proc);
+  document.getElementById('subtitle').textContent=V.length+' processos · Atualizado em '+new Date().toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+  document.getElementById('last-update').textContent='Última atualização: '+new Date().toLocaleString('pt-BR');
+
+  // KPIs
+  const pautados=V.filter(d=>d.pautado==='Sim');
+  let totalVal=0; V.forEach(d=>{totalVal+=parseBRL(d.valor);});
+  document.getElementById('k-total').textContent=V.length;
+  document.getElementById('k-pautados').textContent=pautados.length;
+  document.getElementById('k-valor').textContent=fmtBRL(totalVal)||'—';
+  const tribs=new Set(V.map(d=>d.trib).filter(t=>t&&t!=='N/D'));
+  document.getElementById('k-tribs').textContent=tribs.size;
+  document.getElementById('k-tipos-sub').textContent=new Set(V.map(d=>d.tipo_acao).filter(Boolean)).size+' tipos de ação';
+  const comData=pautados.filter(d=>d.data_sessao).sort((a,b)=>a.data_sessao.split('/').reverse().join('')<b.data_sessao.split('/').reverse().join('')?-1:1);
+  if(comData.length){document.getElementById('k-prox').textContent=comData[0].data_sessao;document.getElementById('k-prox-sub').textContent=comData[0].partes.substring(0,30);}
+  else{document.getElementById('k-prox').textContent='—';document.getElementById('k-prox-sub').textContent='sem data definida';}
+
+  // Tabela pautados
+  const sorted=[...pautados].sort((a,b)=>{if(!a.data_sessao)return 1;if(!b.data_sessao)return-1;return a.data_sessao.split('/').reverse().join('')<b.data_sessao.split('/').reverse().join('')?-1:1;});
+  document.getElementById('cnt-p').textContent=pautados.length+' processos';
+  const tbP=document.getElementById('tb-p');tbP.innerHTML='';
+  if(!sorted.length){tbP.innerHTML='<tr><td colspan="9" class="empty-state">Nenhum processo pautado.</td></tr>';}
+  else sorted.forEach(d=>{
+    const tr=document.createElement('tr');
+    const tc=d.tipo_sessao==='Presencial'?'b-blue':d.tipo_sessao==='Virtual'?'b-green':'b-gray';
+    const tribColor=TC[d.trib]||'#888';
+    tr.innerHTML=`<td style="white-space:normal"><strong>${d.partes}</strong></td><td><span class="badge" style="background:${tribColor}22;color:${tribColor}">${d.trib}</span></td><td style="font-size:.72rem;color:var(--text2)">${d.loc}</td><td style="font-size:.72rem;color:var(--text2);white-space:normal">${d.vara||'—'}</td><td style="font-size:.72rem;color:var(--text2)">${d.mag_piso||'—'}</td><td style="font-size:.72rem;color:var(--text2)">${d.mag_resp||'—'}</td><td style="font-size:.72rem;color:var(--text2)">${d.turma&&d.turma!=='-'?d.turma:'—'}</td><td>${d.tipo_sessao?`<span class="badge ${tc}">${d.tipo_sessao}</span>`:'—'}</td><td><strong>${d.data_sessao||'<span style="color:var(--text3)">a definir</span>'}</strong></td>`;
+    tbP.appendChild(tr);
+  });
+
+  // helper para contar e ordenar
+  function countBy(fn){const m={};V.forEach(d=>{const k=fn(d);if(k)m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+  function mkBar(id,entries,n,optOverride){
+    const el=document.getElementById(id);
+    const ex=Chart.getChart(el);if(ex)ex.destroy();
+    const top=entries.slice(0,n||entries.length);
+    const labels=top.map(e=>e[0]),data=top.map(e=>e[1]);
+    const colors=labels.map((_,i)=>PAL[i%PAL.length]);
+    return new Chart(el,{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:3}]},options:Object.assign({indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} processo${c.raw!==1?'s':''}`}}},scales:{x:{grid:{color:'rgba(128,128,128,.1)'},ticks:{font:{size:9},color:'var(--text3)',precision:0}},y:{grid:{display:false},ticks:{font:{size:9},color:'var(--text2)'}}}},optOverride||{})});
+  }
+  function mkDonut(id,entries,n,lgId,colorFn){
+    const el=document.getElementById(id);
+    const ex=Chart.getChart(el);if(ex)ex.destroy();
+    const top=entries.slice(0,n||entries.length);
+    const labels=top.map(e=>e[0]),data=top.map(e=>e[1]);
+    const colors=colorFn?labels.map(colorFn):labels.map((_,i)=>PAL[i%PAL.length]);
+    new Chart(el,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} processo${c.raw!==1?'s':''}`}}}}});
+    if(lgId)document.getElementById(lgId).innerHTML=labels.map((l,i)=>`<span class="legend-item"><span class="legend-dot" style="background:${colors[i]}"></span>${l} (${data[i]})</span>`).join('');
+  }
+
+  // Gráfico tribunais (barra horizontal)
+  const tribE=countBy(d=>d.trib);
+  const elT=document.getElementById('cTrib');
+  const exT=Chart.getChart(elT);if(exT)exT.destroy();
+  elT.parentElement.style.height=Math.max(220,tribE.length*28+60)+'px';
+  chTrib=new Chart(elT,{type:'bar',data:{labels:tribE.map(e=>e[0]),datasets:[{data:tribE.map(e=>e[1]),backgroundColor:tribE.map(([t])=>TC[t]||'#888'),borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} processo${c.raw!==1?'s':''}`}}},scales:{x:{grid:{color:'rgba(128,128,128,.1)'},ticks:{font:{size:10},color:'var(--text3)',precision:0}},y:{grid:{display:false},ticks:{font:{size:10},color:'var(--text2)'}}}}});
+
+  // Instância
+  const grauE=countBy(d=>d.grau).filter(e=>e[0]!=='N/D');
+  const gColors={'1\u00ba Grau':'#378ADD','2\u00ba Grau':'#1D9E75','Superior':'#D85A30'};
+  mkDonut('cGrau',grauE,10,'lgGrau',l=>gColors[l]||'#888');
+
+  // Tipo de ação
+  mkDonut('cAcao',countBy(d=>d.tipo_acao),10,'lgAcao');
+
+  // Setor
+  const sColors={'Público':'#534AB7','Tributário':'#BA7517','Cível':'#185FA5','Improbidade':'#A32D2D'};
+  mkDonut('cSetor',countBy(d=>d.setor),10,'lgSetor',l=>sColors[l]||PAL[Object.keys(sColors).indexOf(l)%PAL.length]);
+
+  // Filial
+  mkDonut('cFilial',countBy(d=>d.filial),10,'lgFilial');
+
+  // Magistrado de piso (top 10, barra horizontal)
+  mkBar('cMagPiso',countBy(d=>d.mag_piso).filter(e=>e[0]),10);
+
+  // Magistrado responsável (top 10)
+  mkBar('cMagResp',countBy(d=>d.mag_resp).filter(e=>e[0]),10);
+
+  // Turma (top 10)
+  mkBar('cTurma',countBy(d=>d.turma).filter(e=>e[0]&&e[0]!=='-'),10);
+
+  // Vara de origem (top 15, full width)
+  const varaE=countBy(d=>d.vara).filter(e=>e[0]);
+  const elV=document.getElementById('cVara');
+  const exV=Chart.getChart(elV);if(exV)exV.destroy();
+  elV.parentElement.style.height=Math.max(200,Math.min(varaE.length,15)*24+60)+'px';
+  chVara=new Chart(elV,{type:'bar',data:{labels:varaE.slice(0,15).map(e=>e[0]),datasets:[{data:varaE.slice(0,15).map(e=>e[1]),backgroundColor:varaE.slice(0,15).map((_,i)=>PAL[i%PAL.length]),borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw} processo${c.raw!==1?'s':''}`}}},scales:{x:{grid:{color:'rgba(128,128,128,.1)'},ticks:{font:{size:9},color:'var(--text3)',precision:0}},y:{grid:{display:false},ticks:{font:{size:9},color:'var(--text2)'}}}}});
+
+  // Atualiza selects do filtro
+  const fT=document.getElementById('fT'),fS=document.getElementById('fS'),fF=document.getElementById('fF');
+  const curT=fT.value,curS=fS.value,curF=fF.value;
+  fT.innerHTML='<option value="">Todos os tribunais</option>';
+  fS.innerHTML='<option value="">Todos os setores</option>';
+  fF.innerHTML='<option value="">Todas as filiais</option>';
+  tribE.forEach(([t])=>{const o=document.createElement('option');o.value=t;o.textContent=t;if(t===curT)o.selected=true;fT.appendChild(o);});
+  [...new Set(V.map(d=>d.setor).filter(Boolean))].sort().forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===curS)o.selected=true;fS.appendChild(o);});
+  [...new Set(V.map(d=>d.filial).filter(Boolean))].sort().forEach(f=>{const o=document.createElement('option');o.value=f;o.textContent=f;if(f===curF)o.selected=true;fF.appendChild(o);});
+
+  renderAll();
+}
+
+// ── tabela completa com filtros ─────────────────────────────
+function renderAll(){
+  const q=document.getElementById('srch').value.toLowerCase();
+  const ft=document.getElementById('fT').value,fg=document.getElementById('fG').value;
+  const fs=document.getElementById('fS').value,ff=document.getElementById('fF').value;
+  const fp=document.getElementById('fP').value;
+  const V=DATA.filter(d=>d.partes||d.proc);
+  const fil=V.filter(d=>{
+    const m=!q||[d.partes,d.proc,d.mag_resp,d.mag_piso,d.trib,d.loc,d.tipo_acao,d.materia,d.vara,d.turma].some(v=>v&&v.toLowerCase().includes(q));
+    return m&&(!ft||d.trib===ft)&&(!fg||d.grau===fg)&&(!fs||d.setor===fs)&&(!ff||d.filial===ff)&&(!fp||d.pautado===fp);
+  });
+  document.getElementById('cnt-all').textContent=fil.length+' processos';
+  const tb=document.getElementById('tb-all');tb.innerHTML='';
+  if(!fil.length){tb.innerHTML='<tr><td colspan="14" class="empty-state">Nenhum processo encontrado para os filtros selecionados.</td></tr>';return;}
+  fil.forEach(d=>{
+    const tr=document.createElement('tr');
+    const vb=d.valor?`<span class="badge b-lime">${d.valor.replace('R$ ','R$\u202f')}</span>`:'—';
+    const mr=d.mag_resp&&d.mag_resp!=='-'?d.mag_resp:'—';
+    const tribColor=TC[d.trib]||'#888';
+    tr.innerHTML=`<td class="mono">${d.proc||'—'}</td><td style="white-space:normal">${d.partes}</td><td><span class="badge" style="background:${tribColor}22;color:${tribColor}">${d.trib}</span></td><td style="font-size:.72rem;color:var(--text2)">${d.grau||'—'}</td><td style="font-size:.72rem;color:var(--text2);white-space:normal">${d.vara||'—'}</td><td style="font-size:.72rem;color:var(--text2)">${d.mag_piso||'—'}</td><td style="font-size:.72rem;color:var(--text2)">${mr.length>45?mr.substring(0,45)+'…':mr}</td><td style="font-size:.72rem;color:var(--text2)">${d.turma&&d.turma!=='-'?d.turma:'—'}</td><td style="font-size:.72rem;white-space:normal">${d.tipo_acao||'—'}</td><td style="font-size:.72rem;color:var(--text2)">${d.materia||'—'}</td><td>${d.setor?`<span class="badge b-purple">${d.setor}</span>`:'—'}</td><td style="font-size:.72rem">${d.filial||'—'}</td><td>${vb}</td><td><span class="badge ${d.pautado==='Sim'?'b-green':'b-gray'}">${d.pautado||'Não'}</span></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+// ── Config / localStorage ───────────────────────────────────
+function loadConfig(){const c=JSON.parse(localStorage.getItem('mma_config')||'{}');if(c.sheetId)document.getElementById('sheetId').value=c.sheetId;if(c.sheetName)document.getElementById('sheetName').value=c.sheetName;if(c.apiKey)document.getElementById('apiKey').value=c.apiKey;if(c.autoRefresh)document.getElementById('autoRefresh').value=c.autoRefresh;return c;}
+function saveConfig(){const c={sheetId:document.getElementById('sheetId').value.trim(),sheetName:document.getElementById('sheetName').value.trim(),apiKey:document.getElementById('apiKey').value.trim(),autoRefresh:document.getElementById('autoRefresh').value};localStorage.setItem('mma_config',JSON.stringify(c));return c;}
+function saveConfigAndSync(){saveConfig();syncSheets();}
+function setupAutoRefresh(ms){clearInterval(autoRefreshTimer);ms=parseInt(ms);if(ms>0)autoRefreshTimer=setInterval(syncSheets,ms);}
+
+// ── parseSheetRows ──────────────────────────────────────────
+function parseSheetRows(rows){
+  if(!rows||rows.length<2)return[];
+  const headers=rows[0].map(h=>(h||'').toString().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase());
+  const idx=(...terms)=>{for(const t of terms){const i=headers.findIndex(h=>h.includes(norm(t)));if(i!==-1)return i;}return -1;};
+  const iProc=idx('processo'),iPartes=idx('nome das partes','partes'),iTrib=idx('tribunal responsavel','tribunal');
+  const iLoc=idx('localizacao do processo','localiza'),iVara=idx('vara de origem','vara');
+  const iMagPiso=idx('magistrado de piso'),iTurma=idx('turma'),iMagResp=idx('magistrado responsavel','relator');
+  const iPautado=idx('processo pautado','pautado'),iTipoS=idx('tipo da sessao'),iDataS=idx('data da sessao');
+  const iTipoA=idx('tipo da acao','tipo de acao'),iMat=idx('materia');
+  const iSetor=idx('setor responsavel','setor'),iFilial=idx('filial responsavel','filial');
+  const iValor=idx('valores envolvidos','valor envolvido');
+  const g=(row,i)=>i>=0&&row[i]!==undefined?String(row[i]).trim():'';
+  return rows.slice(1).map(row=>{
+    const tribRaw=g(row,iTrib),locRaw=g(row,iLoc);
+    const trib=classTrib(tribRaw),grau=classGrau(locRaw,tribRaw);
+    let loc=locRaw||'';
+    if(!loc||loc==='Tribunais Superiores')loc=trib;
+    else if(/1[°o]\s*GRAU|1\u00baGRAU/.test(loc))loc=trib+' 1\u00ba Grau';
+    else if(/2[°o]\s*GRAU|2\u00baGRAU/.test(loc))loc=trib+' 2\u00ba Grau';
+    let dataSessao=g(row,iDataS);
+    if(dataSessao&&/^\d{5}$/.test(dataSessao)){const d=new Date((parseInt(dataSessao)-25569)*86400*1000);dataSessao=d.toLocaleDateString('pt-BR');}
+    return{proc:g(row,iProc),partes:g(row,iPartes),trib_raw:tribRaw,loc_raw:locRaw,loc,trib,grau,vara:g(row,iVara),mag_piso:g(row,iMagPiso),turma:g(row,iTurma),mag_resp:g(row,iMagResp),pautado:g(row,iPautado)||'Não',tipo_sessao:g(row,iTipoS),data_sessao:dataSessao,tipo_acao:g(row,iTipoA),materia:g(row,iMat),setor:g(row,iSetor),filial:g(row,iFilial),valor:g(row,iValor)};
+  }).filter(d=>d.proc||d.partes);
+}
+
+// ── Sync via Google Sheets API ──────────────────────────────
+async function syncSheets(){
+  const c=saveConfig();
+  if(!c.sheetId||!c.apiKey){setStatus('Configure o ID e a chave de API para sincronizar ao vivo.','err');return;}
+  const btn=document.getElementById('syncBtn');
+  btn.innerHTML='<span class="spinner"></span> Sincronizando…';btn.disabled=true;
+  setStatus('Buscando dados…','');
+  try{
+    const sheetName=encodeURIComponent(c.sheetName||'Informações Institucionais');
+    const url=`https://sheets.googleapis.com/v4/spreadsheets/${c.sheetId}/values/${sheetName}?key=${c.apiKey}`;
+    const res=await fetch(url);
+    if(!res.ok){const e=await res.json();throw new Error(e.error?.message||`HTTP ${res.status}`);}
+    const json=await res.json();
+    const rows=parseSheetRows(json.values||[]);
+    if(rows.length===0)throw new Error('Nenhuma linha encontrada. Verifique o nome da aba e o compartilhamento.');
+    DATA=rows;
+    localStorage.setItem('mma_cache',JSON.stringify({data:rows,ts:Date.now()}));
+    setStatus(`✓ ${rows.length} processos — ${new Date().toLocaleTimeString('pt-BR')}`,'ok');
+    render();setupAutoRefresh(c.autoRefresh);
+  }catch(e){
+    setStatus('Erro: '+e.message,'err');
+    if(EMBEDDED_DATA&&EMBEDDED_DATA.length>0){DATA=processRows(EMBEDDED_DATA);render();}
+  }
+  btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar Google Sheets';btn.disabled=false;
+}
+
+function exportCSV(){
+  const cols=['proc','partes','trib','grau','vara','mag_piso','mag_resp','turma','pautado','tipo_sessao','data_sessao','tipo_acao','materia','setor','filial','valor'];
+  const rows=DATA.map(d=>cols.map(c=>`"${(d[c]||'').replace(/"/g,'""')}"`).join(','));
+  const csv=[cols.join(','),...rows].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));a.download=`processos_estrategicos_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+}
+
+// ── init ────────────────────────────────────────────────────
+(function init(){
+  loadConfig();
+  if(EMBEDDED_DATA&&EMBEDDED_DATA.length>0){
+    DATA=processRows(EMBEDDED_DATA);
+    render();
+    setStatus(`Dados embutidos — ${DATA.length} processos`,'ok');
+  }else{
+    document.getElementById('subtitle').textContent='Sem dados — rode sincronizar_estrategicos.py ou configure a sincronização ao vivo';
+    document.getElementById('tb-p').innerHTML='<tr><td colspan="9" class="empty-state">Sem dados. Rode o script de sincronização.</td></tr>';
+    document.getElementById('tb-all').innerHTML='<tr><td colspan="14" class="empty-state">Sem dados.</td></tr>';
+  }
+})();
+</script>
+</body>
+</html>
